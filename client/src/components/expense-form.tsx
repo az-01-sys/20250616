@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, PlusCircle } from "lucide-react";
-import { expenseCategories } from "@/lib/utils";
+import { expenseCategories, incomeCategories } from "@/lib/utils";
 
 export default function ExpenseForm() {
   const { toast } = useToast();
@@ -23,6 +23,7 @@ export default function ExpenseForm() {
       amount: 0,
       description: "",
       category: "",
+      type: "expense",
     },
   });
 
@@ -34,9 +35,10 @@ export default function ExpenseForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
       form.reset();
+      const recordType = data.type === "expense" ? "支出" : "収入";
       toast({
-        title: "支出を追加しました",
-        description: "新しい支出が正常に記録されました。",
+        title: `${recordType}を追加しました`,
+        description: `新しい${recordType}が正常に記録されました。`,
       });
     },
     onError: (error: Error) => {

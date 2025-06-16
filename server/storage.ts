@@ -33,6 +33,7 @@ export class MemStorage implements IStorage {
       ...insertExpense,
       id,
       date: new Date(),
+      type: insertExpense.type || "expense",
     };
     this.expenses.set(id, expense);
     return expense;

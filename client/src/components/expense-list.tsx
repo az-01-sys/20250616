@@ -142,12 +142,12 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
                     </div>
                     <div>
                       <p className="font-medium">{expense.description}</p>
-                      <p className="text-sm text-gray-500 flex items-center">
+                      <div className="text-sm text-gray-500 flex items-center">
                         <Badge className={`mr-2 ${categoryColors[expense.category]}`}>
                           {expense.category}
                         </Badge>
                         <span>{formatDate(expense.date)}</span>
-                      </p>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">

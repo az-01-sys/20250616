@@ -23,14 +23,16 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
   const queryClient = useQueryClient();
 
   const deleteExpenseMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async ({ id, type }: { id: number; type: string }) => {
       await apiRequest("DELETE", `/api/expenses/${id}`);
+      return type;
     },
-    onSuccess: () => {
+    onSuccess: (type) => {
       queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
+      const recordType = type === "income" ? "収入" : "支出";
       toast({
-        title: "支出を削除しました",
-        description: "支出が正常に削除されました。",
+        title: `${recordType}を削除しました`,
+        description: `${recordType}が正常に削除されました。`,
       });
     },
     onError: (error: Error) => {
@@ -65,7 +67,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
   const handleDelete = (id: number, type: string) => {
     const recordType = type === "income" ? "収入" : "支出";
     if (confirm(`この${recordType}を削除してもよろしいですか？`)) {
-      deleteExpenseMutation.mutate(id);
+      deleteExpenseMutation.mutate({ id, type });
     }
   };
 
@@ -174,7 +176,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
                         variant="ghost"
                         size="sm"
                         className="text-gray-400 hover:text-destructive"
-                        onClick={() => handleDelete(expense.id)}
+                        onClick={() => handleDelete(expense.id, expense.type || "expense")}
                         disabled={deleteExpenseMutation.isPending}
                       >
                         <Trash2 className="h-4 w-4" />

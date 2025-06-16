@@ -14,12 +14,25 @@ export default function ExpenseDashboard() {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   
-  const monthlyTotal = expenses
+  const monthlyExpenses = expenses
     .filter(expense => {
       const expenseDate = new Date(expense.date);
-      return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+      return expenseDate.getMonth() === currentMonth && 
+             expenseDate.getFullYear() === currentYear &&
+             expense.type === "expense";
     })
     .reduce((sum, expense) => sum + expense.amount, 0);
+
+  const monthlyIncome = expenses
+    .filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate.getMonth() === currentMonth && 
+             expenseDate.getFullYear() === currentYear &&
+             expense.type === "income";
+    })
+    .reduce((sum, expense) => sum + expense.amount, 0);
+
+  const netAmount = monthlyIncome - monthlyExpenses;
 
   if (isLoading) {
     return (
@@ -40,11 +53,23 @@ export default function ExpenseDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Wallet className="text-2xl" />
-              <h1 className="text-2xl font-bold">支出管理</h1>
+              <h1 className="text-2xl font-bold">家計管理</h1>
             </div>
-            <div className="text-right">
-              <p className="text-sm opacity-90">今月の支出</p>
-              <p className="text-2xl font-bold">{formatCurrency(monthlyTotal)}</p>
+            <div className="grid grid-cols-3 gap-4 text-right">
+              <div>
+                <p className="text-sm opacity-90">今月の収入</p>
+                <p className="text-xl font-bold text-green-300">+{formatCurrency(monthlyIncome)}</p>
+              </div>
+              <div>
+                <p className="text-sm opacity-90">今月の支出</p>
+                <p className="text-xl font-bold text-red-300">-{formatCurrency(monthlyExpenses)}</p>
+              </div>
+              <div>
+                <p className="text-sm opacity-90">収支</p>
+                <p className={`text-xl font-bold ${netAmount >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                  {netAmount >= 0 ? '+' : ''}{formatCurrency(netAmount)}
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -17,7 +17,7 @@ interface ExpenseListProps {
 
 export default function ExpenseList({ expenses }: ExpenseListProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [timeFilter, setTimeFilter] = useState("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -44,7 +44,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
 
   const filteredExpenses = expenses.filter((expense) => {
     const matchesSearch = expense.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !categoryFilter || expense.category === categoryFilter;
+    const matchesCategory = !categoryFilter || categoryFilter === "all" || expense.category === categoryFilter;
     
     let matchesTime = true;
     if (timeFilter === "today") {
@@ -116,7 +116,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
                 <SelectValue placeholder="すべてのカテゴリ" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">すべてのカテゴリ</SelectItem>
+                <SelectItem value="all">すべてのカテゴリ</SelectItem>
                 {expenseCategories.map((category) => (
                   <SelectItem key={category.value} value={category.value}>
                     {category.label}

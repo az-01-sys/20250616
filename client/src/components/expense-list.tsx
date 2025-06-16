@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatDate, categoryEmojis, categoryColors, expenseCategories } from "@/lib/utils";
+import { formatCurrency, formatDate, categoryEmojis, categoryColors, expenseCategories, incomeCategories } from "@/lib/utils";
 import { List, Edit, Trash2 } from "lucide-react";
 
 interface ExpenseListProps {
@@ -62,8 +62,9 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
 
   const filteredTotal = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
-  const handleDelete = (id: number) => {
-    if (confirm("この支出を削除してもよろしいですか？")) {
+  const handleDelete = (id: number, type: string) => {
+    const recordType = type === "income" ? "収入" : "支出";
+    if (confirm(`この${recordType}を削除してもよろしいですか？`)) {
       deleteExpenseMutation.mutate(id);
     }
   };
@@ -122,6 +123,11 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
                     {category.label}
                   </SelectItem>
                 ))}
+                {incomeCategories.map((category) => (
+                  <SelectItem key={category.value} value={category.value}>
+                    {category.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -151,7 +157,11 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <span className="font-semibold text-lg">{formatCurrency(expense.amount)}</span>
+                    <span className={`font-semibold text-lg ${
+                      expense.type === "income" ? "text-green-600" : "text-gray-900"
+                    }`}>
+                      {expense.type === "income" ? "+" : "-"}{formatCurrency(expense.amount)}
+                    </span>
                     <div className="flex space-x-1">
                       <Button
                         variant="ghost"

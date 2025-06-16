@@ -32,10 +32,15 @@ export default function ExpenseForm() {
       const response = await apiRequest("POST", "/api/expenses", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
-      form.reset();
-      const recordType = data.type === "expense" ? "支出" : "収入";
+      form.reset({
+        amount: 0,
+        description: "",
+        category: "",
+        type: "expense",
+      });
+      const recordType = variables.type === "expense" ? "支出" : "収入";
       toast({
         title: `${recordType}を追加しました`,
         description: `新しい${recordType}が正常に記録されました。`,
@@ -59,11 +64,33 @@ export default function ExpenseForm() {
       <CardContent className="p-6">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
           <PlusCircle className="text-primary mr-2" />
-          新しい支出を追加
+          新しい記録を追加
         </h2>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>種類</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="種類を選択" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="expense">💸 支出</SelectItem>
+                      <SelectItem value="income">💰 収入</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -91,26 +118,30 @@ export default function ExpenseForm() {
               <FormField
                 control={form.control}
                 name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>カテゴリ</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="カテゴリを選択" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {expenseCategories.map((category) => (
-                          <SelectItem key={category.value} value={category.value}>
-                            {category.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const watchedType = form.watch("type");
+                  const categories = watchedType === "income" ? incomeCategories : expenseCategories;
+                  return (
+                    <FormItem>
+                      <FormLabel>カテゴリ</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="カテゴリを選択" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.value} value={category.value}>
+                              {category.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 
@@ -137,7 +168,8 @@ export default function ExpenseForm() {
               disabled={createExpenseMutation.isPending}
             >
               <Plus className="mr-2 h-4 w-4" />
-              {createExpenseMutation.isPending ? "追加中..." : "支出を追加"}
+              {createExpenseMutation.isPending ? "追加中..." : 
+               form.watch("type") === "income" ? "収入を追加" : "支出を追加"}
             </Button>
           </form>
         </Form>
